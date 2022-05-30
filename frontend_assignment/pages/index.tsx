@@ -1,12 +1,36 @@
 import detectEthereumProvider from "@metamask/detect-provider"
 import { Strategy, ZkIdentity } from "@zk-kit/identity"
 import { generateMerkleProof, Semaphore } from "@zk-kit/protocols"
-import { providers } from "ethers"
+import { providers,Contract, utils } from "ethers"
 import Head from "next/head"
 import React from "react"
+import { useState, useEffect } from "react"
 import styles from "../styles/Home.module.css"
+import GreetForm from "./components/GreetingForm";
+import Greeter from "artifacts/contracts/Greeters.sol/Greeters.json"
 
 export default function Home() {
+  const [message, setMessage] = useState('')
+  const [greetings, setGreetings] = useState<string[]>([])
+
+  useEffect(() => {
+    const listener = async () => {
+      const contract = new Contract(
+        '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
+        Greeter.abi,
+      )
+
+      const provider = new providers.JsonRpcProvider('http://localhost:8545')
+
+      const contractOwner = contract.connect(provider.getSigner())
+
+      contractOwner.on('NewGreeting', (greeting) => {
+        const message = utils.parseBytes32String(greeting)
+        setGreetings((greetings) => [...greetings, message])
+      })
+    }
+    listener()
+  }, []);
     const [logs, setLogs] = React.useState("Connect your wallet and greet!")
 
     async function greet() {
@@ -77,6 +101,14 @@ export default function Home() {
                 <div onClick={() => greet()} className={styles.button}>
                     Greet
                 </div>
+                <GreetForm/>
+                <textarea     
+                  placeholder="Default message"
+                  value={greetings}
+                  onChange={(e) => {
+                  setMessage(e.target.value)}}
+                />
+                
             </main>
         </div>
     )

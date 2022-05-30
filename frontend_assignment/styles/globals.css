@@ -8,6 +8,12 @@ body {
         Helvetica Neue, sans-serif;
 }
 
+textarea{
+    margin-top: 10px;
+    align-items: center;
+    align-content: center;
+}
+
 a {
     color: inherit;
     color: #7FB3F1;
