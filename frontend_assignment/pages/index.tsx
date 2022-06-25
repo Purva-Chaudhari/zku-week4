@@ -9,6 +9,10 @@ import styles from "../styles/Home.module.css"
 import GreetForm from "./components/GreetingForm";
 import Greeter from "artifacts/contracts/Greeters.sol/Greeters.json"
 
+import Button from '@mui/material/Button'
+
+
+
 export default function Home() {
   const [message, setMessage] = useState('')
   const [greetings, setGreetings] = useState<string[]>([])
@@ -83,6 +87,36 @@ export default function Home() {
         }
     }
 
+    async function register(){
+      /*
+        * Prompts user to sign a message
+        * Creates a semaphore identity with the signed message
+        * Use that identity to add into the on-chain group
+      */
+      const message = "Make me anonymous"
+      if (typeof window.ethereum !== 'undefined') {
+        console.log('MetaMask is installed!');
+      }
+      
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = new providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+      const signature = await signer.signMessage(message)
+      const address = await signer.getAddress()
+      console.log({ signer, signature, address })
+      const identity = new ZkIdentity(Strategy.MESSAGE, signature)
+      const identityCommitment = identity.genIdentityCommitment()
+      console.log(identityCommitment)
+    
+      /*const identity = new Identity(signature)
+      const trapdoor = identity.getTrapdoor()
+      const nullifier = identity.getNullifier()
+      const commitment = identity.generateCommitment()
+      
+      console.log(trapdoor, nullifier, commitment)*/
+    
+  }
+
     return (
         <div className={styles.container}>
             <Head>
@@ -91,25 +125,9 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <main className={styles.main}>
-                <h1 className={styles.title}>Greetings</h1>
-
-                <p className={styles.description}>A simple Next.js/Hardhat privacy application with Semaphore.</p>
-
-                <div className={styles.logs}>{logs}</div>
-
-                <div onClick={() => greet()} className={styles.button}>
-                    Greet
-                </div>
-                <GreetForm/>
-                <textarea     
-                  placeholder="Default message"
-                  value={greetings}
-                  onChange={(e) => {
-                  setMessage(e.target.value)}}
-                />
-                
-            </main>
-        </div>
+            <div><h1>ZK Oauth</h1></div>
+        <div><p> Create your <b>anonymous</b> identity on <b>blockchain</b>. </p></div>
+        <div><Button variant="outlined" size="large" className='register' onClick={register}> Register </Button></div>
+      </div>
     )
 }
